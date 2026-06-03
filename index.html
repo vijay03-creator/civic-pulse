@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CivicPulse — Report. Track. Resolve.</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <span class="pulse-dot"></span>
+      CivicPulse
+    </div>
+    <div class="nav-stats">
+      <span id="nav-total">0 Issues</span>
+      <span class="nav-sep">·</span>
+      <span id="nav-resolved">0 Resolved</span>
+    </div>
+    <button class="btn-report" id="openModal">+ Report Issue</button>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-text">
+      <h1>Your city.<br /><em>Your voice.</em></h1>
+      <p>Report civic issues in 30 seconds. Track them live. Hold your city accountable.</p>
+    </div>
+    <div class="hero-chips">
+      <span class="chip chip-open" id="filter-all">All</span>
+      <span class="chip" id="filter-open">Open</span>
+      <span class="chip" id="filter-progress">In Progress</span>
+      <span class="chip" id="filter-resolved">Resolved</span>
+    </div>
+  </section>
+
+  <!-- MAIN LAYOUT -->
+  <main class="main-layout">
+
+    <!-- MAP -->
+    <section class="map-panel">
+      <div id="map"></div>
+      <div class="map-label">📍 Live Issue Map</div>
+    </section>
+
+    <!-- ISSUE FEED -->
+    <section class="feed-panel">
+      <div class="feed-header">
+        <h2>Community Feed</h2>
+        <select id="sort-select">
+          <option value="newest">Newest First</option>
+          <option value="votes">Most Upvoted</option>
+          <option value="category">By Category</option>
+        </select>
+      </div>
+      <div id="issue-feed" class="issue-feed">
+        <!-- Cards injected by JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <button class="modal-close" id="closeModal">✕</button>
+      <h2>Report an Issue</h2>
+      <p class="modal-sub">Takes 30 seconds. Makes a real difference.</p>
+
+      <div class="form-group">
+        <label>Category</label>
+        <div class="category-grid" id="category-grid">
+          <button class="cat-btn active" data-cat="Roads">🛣️ Roads</button>
+          <button class="cat-btn" data-cat="Water">💧 Water</button>
+          <button class="cat-btn" data-cat="Power">⚡ Power</button>
+          <button class="cat-btn" data-cat="Waste">🗑️ Waste</button>
+          <button class="cat-btn" data-cat="Safety">🚨 Safety</button>
+          <button class="cat-btn" data-cat="Other">📌 Other</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="issue-title">Title <span>*</span></label>
+        <input type="text" id="issue-title" placeholder="e.g. Large pothole on Main St." maxlength="80" />
+      </div>
+
+      <div class="form-group">
+        <label for="issue-desc">Description</label>
+        <textarea id="issue-desc" rows="3" placeholder="Describe the issue — what, where, how bad..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="issue-location">Location</label>
+        <input type="text" id="issue-location" placeholder="e.g. 5th Ave & Oak St, Block 12" />
+      </div>
+
+      <div class="form-group form-row">
+        <div>
+          <label for="issue-lat">Latitude (optional)</label>
+          <input type="number" id="issue-lat" placeholder="40.7128" step="any" />
+        </div>
+        <div>
+          <label for="issue-lng">Longitude (optional)</label>
+          <input type="number" id="issue-lng" placeholder="-74.0060" step="any" />
+        </div>
+      </div>
+
+      <button class="btn-use-location" id="use-location">📍 Use My Location</button>
+
+      <button class="btn-submit" id="submit-issue">Submit Report →</button>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
