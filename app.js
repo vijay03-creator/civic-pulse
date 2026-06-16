@@ -1,10 +1,12 @@
 // ==============================================
-//  CIVICPULSE — app.js
-//  Bangalore Real Data Edition
+//  NAGAR EYE — app.js (Firebase Firestore Edition)
 // ==============================================
 
-// ---- CLEAR OLD LOCALSTORAGE (force fresh Bangalore data) ----
-localStorage.removeItem('civicpulse_issues');
+import { db } from './firebase-config.js';
+import {
+  collection, getDocs, addDoc, updateDoc,
+  doc, serverTimestamp, query, orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ---- REAL BANGALORE SEED DATA ----
 const SEED = [
@@ -12,156 +14,96 @@ const SEED = [
     id: 's1',
     title: 'Massive pothole causing bike accidents daily',
     desc: 'Large pothole near Silk Board signal, depth around 8 inches. 3 bike accidents reported this week alone.',
-    category: 'Roads',
-    status: 'open',
-    votes: 142,
-    voted: false,
-    location: 'Silk Board Junction, Hosur Road',
-    lat: 12.9177,
-    lng: 77.6220,
+    category: 'Roads', status: 'open', votes: 142, voted: false,
+    location: 'Silk Board Junction, Hosur Road', lat: 12.9177, lng: 77.6220,
     time: Date.now() - 86400000 * 1
   },
   {
     id: 's2',
     title: 'Illegal garbage dumping near Bellandur Lake',
     desc: 'Construction waste and household garbage being dumped openly. Spreading foul smell and mosquito breeding.',
-    category: 'Waste',
-    status: 'open',
-    votes: 98,
-    voted: false,
-    location: 'Bellandur Lake Road, Bellandur',
-    lat: 12.9259,
-    lng: 77.6762,
+    category: 'Waste', status: 'open', votes: 98, voted: false,
+    location: 'Bellandur Lake Road, Bellandur', lat: 12.9259, lng: 77.6762,
     time: Date.now() - 86400000 * 2
   },
   {
     id: 's3',
     title: 'Sewage overflowing onto main road',
     desc: 'Sewage pipe burst near MG Road metro station. Dirty water flowing on footpath, health hazard for pedestrians.',
-    category: 'Water',
-    status: 'progress',
-    votes: 76,
-    voted: false,
-    location: 'MG Road near Trinity Metro Station',
-    lat: 12.9756,
-    lng: 77.6099,
+    category: 'Water', status: 'progress', votes: 76, voted: false,
+    location: 'MG Road near Trinity Metro Station', lat: 12.9756, lng: 77.6099,
     time: Date.now() - 86400000 * 3
   },
   {
     id: 's4',
     title: 'Street lights off for 2 weeks — women feel unsafe',
     desc: 'Entire stretch of street lights non-functional. Women returning from work after 8pm feel very unsafe.',
-    category: 'Safety',
-    status: 'open',
-    votes: 211,
-    voted: false,
-    location: 'Koramangala 5th Block, 80 Feet Road',
-    lat: 12.9352,
-    lng: 77.6245,
+    category: 'Safety', status: 'open', votes: 211, voted: false,
+    location: 'Koramangala 5th Block, 80 Feet Road', lat: 12.9352, lng: 77.6245,
     time: Date.now() - 86400000 * 5
   },
   {
     id: 's5',
     title: 'Severe waterlogging — traffic jams every rain',
     desc: 'Marathahalli bridge underpass floods within 20 mins of rain. Vehicles getting stuck, office goers badly affected.',
-    category: 'Water',
-    status: 'open',
-    votes: 334,
-    voted: false,
-    location: 'Marathahalli Bridge, Outer Ring Road',
-    lat: 12.9591,
-    lng: 77.6972,
+    category: 'Water', status: 'open', votes: 334, voted: false,
+    location: 'Marathahalli Bridge, Outer Ring Road', lat: 12.9591, lng: 77.6972,
     time: Date.now() - 86400000 * 1
   },
   {
     id: 's6',
     title: 'Garbage black spot near park — 6 months ignored',
     desc: 'Open garbage dumping next to Cubbon Park entrance. BBMP has not cleared it despite multiple complaints.',
-    category: 'Waste',
-    status: 'progress',
-    votes: 87,
-    voted: false,
-    location: 'Cubbon Park Main Gate, Kasturba Road',
-    lat: 12.9763,
-    lng: 77.5929,
+    category: 'Waste', status: 'progress', votes: 87, voted: false,
+    location: 'Cubbon Park Main Gate, Kasturba Road', lat: 12.9763, lng: 77.5929,
     time: Date.now() - 86400000 * 14
   },
   {
     id: 's7',
     title: 'Daily power cuts 6–10pm — IT workers affected',
     desc: 'Whitefield area facing 4-hour power cuts every evening. BESCOM not responding. WFH employees badly impacted.',
-    category: 'Power',
-    status: 'progress',
-    votes: 456,
-    voted: false,
-    location: 'Whitefield ITPL Main Road',
-    lat: 12.9858,
-    lng: 77.7272,
+    category: 'Power', status: 'progress', votes: 456, voted: false,
+    location: 'Whitefield ITPL Main Road', lat: 12.9858, lng: 77.7272,
     time: Date.now() - 86400000 * 4
   },
   {
     id: 's8',
     title: 'Broken footpath — elderly fall risk',
     desc: 'Footpath tiles completely broken and uplifted. An elderly woman fell and fractured her wrist last week.',
-    category: 'Roads',
-    status: 'resolved',
-    votes: 63,
-    voted: false,
-    location: 'Indiranagar 100 Feet Road, near BDA Complex',
-    lat: 12.9784,
-    lng: 77.6408,
+    category: 'Roads', status: 'resolved', votes: 63, voted: false,
+    location: 'Indiranagar 100 Feet Road, near BDA Complex', lat: 12.9784, lng: 77.6408,
     time: Date.now() - 86400000 * 20
   },
   {
     id: 's9',
     title: 'Tree branch fallen on transformer wire',
     desc: 'Large dry tree branch resting on 11KV transformer wire near HSR. Sparks visible at night — fire risk.',
-    category: 'Power',
-    status: 'open',
-    votes: 179,
-    voted: false,
-    location: 'HSR Layout Sector 2, 27th Main',
-    lat: 12.9116,
-    lng: 77.6473,
+    category: 'Power', status: 'open', votes: 179, voted: false,
+    location: 'HSR Layout Sector 2, 27th Main', lat: 12.9116, lng: 77.6473,
     time: Date.now() - 86400000 * 2
   },
   {
     id: 's10',
     title: 'Stray dogs attacking school children',
     desc: 'Pack of 8+ stray dogs near Jayanagar school gate. Two children bitten this month. BBMP animal control not responding.',
-    category: 'Safety',
-    status: 'open',
-    votes: 290,
-    voted: false,
-    location: 'Jayanagar 4th Block, near Govt School',
-    lat: 12.9254,
-    lng: 77.5938,
+    category: 'Safety', status: 'open', votes: 290, voted: false,
+    location: 'Jayanagar 4th Block, near Govt School', lat: 12.9254, lng: 77.5938,
     time: Date.now() - 86400000 * 3
   },
   {
     id: 's11',
     title: 'Drainage blocked — stagnant water breeding mosquitoes',
     desc: 'Storm drain completely blocked with plastic waste. Stagnant water for 10+ days. Dengue cases reported nearby.',
-    category: 'Water',
-    status: 'open',
-    votes: 145,
-    voted: false,
-    location: 'BTM Layout 2nd Stage, 16th Cross',
-    lat: 12.9165,
-    lng: 77.6101,
+    category: 'Water', status: 'open', votes: 145, voted: false,
+    location: 'BTM Layout 2nd Stage, 16th Cross', lat: 12.9165, lng: 77.6101,
     time: Date.now() - 86400000 * 7
   },
   {
     id: 's12',
     title: 'Road dug up by BWSSB — not repaired for 3 months',
     desc: 'BWSSB dug the road for pipeline work in January. Road never repaired. Half the road is gravel and mud.',
-    category: 'Roads',
-    status: 'progress',
-    votes: 201,
-    voted: false,
-    location: 'JP Nagar 6th Phase, 24th Main',
-    lat: 12.9072,
-    lng: 77.5856,
+    category: 'Roads', status: 'progress', votes: 201, voted: false,
+    location: 'JP Nagar 6th Phase, 24th Main', lat: 12.9072, lng: 77.5856,
     time: Date.now() - 86400000 * 90
   }
 ];
@@ -178,29 +120,68 @@ let selCat  = 'Roads';
 let markers = {};
 let map;
 
-// ---- STORAGE ----
-function load() {
-  const saved = localStorage.getItem('civicpulse_issues');
-  if (saved) {
-    issues = JSON.parse(saved);
-  } else {
+// ---- FIRESTORE: Load issues ----
+async function load() {
+  try {
+    const col = collection(db, 'issues');
+    const snap = await getDocs(query(col, orderBy('time', 'desc')));
+
+    if (snap.empty) {
+      // First time: seed the database with Bangalore data
+      showToast('⏳ Loading data for the first time...', '');
+      for (const issue of SEED) {
+        await addDoc(collection(db, 'issues'), issue);
+      }
+      // Reload after seeding
+      const snap2 = await getDocs(query(col, orderBy('time', 'desc')));
+      issues = snap2.docs.map(d => ({ ...d.data(), _docId: d.id }));
+    } else {
+      issues = snap.docs.map(d => ({ ...d.data(), _docId: d.id }));
+    }
+  } catch (err) {
+    console.error('Firestore load error:', err);
+    showToast('⚠️ Could not connect to database', 'error');
+    // Fallback to seed data so UI still works
     issues = JSON.parse(JSON.stringify(SEED));
-    save();
+  }
+  renderFeed();
+  renderMarkers();
+  updateNavStats();
+}
+
+// ---- FIRESTORE: Save a new issue ----
+async function saveNewIssue(issue) {
+  try {
+    const docRef = await addDoc(collection(db, 'issues'), issue);
+    issue._docId = docRef.id;
+  } catch (err) {
+    console.error('Firestore save error:', err);
+    showToast('⚠️ Could not save to database', 'error');
   }
 }
 
-function save() {
-  localStorage.setItem('civicpulse_issues', JSON.stringify(issues));
+// ---- FIRESTORE: Update an existing issue ----
+async function updateIssue(issue) {
+  if (!issue._docId) return;
+  try {
+    const ref = doc(db, 'issues', issue._docId);
+    await updateDoc(ref, {
+      votes:  issue.votes,
+      voted:  issue.voted,
+      status: issue.status
+    });
+  } catch (err) {
+    console.error('Firestore update error:', err);
+  }
 }
 
 // ---- MAP ----
 function initMap() {
   map = L.map('map', { zoomControl: true, scrollWheelZoom: true });
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap',
-    maxZoom: 19,
+    attribution: '© OpenStreetMap', maxZoom: 19,
   }).addTo(map);
-  map.setView([12.9716, 77.5946], 12); // Bangalore center
+  map.setView([12.9716, 77.5946], 12);
 }
 
 function getMarkerColor(status) {
@@ -222,8 +203,7 @@ function renderMarkers() {
         box-shadow:0 2px 8px rgba(0,0,0,0.5);
         display:flex;align-items:center;justify-content:center;
       "><span style="transform:rotate(45deg);font-size:11px;">${CAT_ICONS[issue.category] || '📌'}</span></div>`,
-      iconSize: [28, 28],
-      iconAnchor: [14, 28],
+      iconSize: [28, 28], iconAnchor: [14, 28],
     });
     const m = L.marker([issue.lat, issue.lng], { icon })
       .addTo(map)
@@ -241,7 +221,7 @@ function renderMarkers() {
           </div>
         </div>
       `);
-    markers[issue.id] = m;
+    markers[issue.id || issue._docId] = m;
   });
 }
 
@@ -257,10 +237,10 @@ function getFiltered() {
 function timeAgo(ts) {
   const diff = Date.now() - ts;
   const mins = Math.floor(diff / 60000);
-  if (mins < 1)   return 'just now';
-  if (mins < 60)  return `${mins}m ago`;
+  if (mins < 1)  return 'just now';
+  if (mins < 60) return `${mins}m ago`;
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24)   return `${hrs}h ago`;
+  if (hrs < 24)  return `${hrs}h ago`;
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
@@ -288,7 +268,7 @@ function renderFeed() {
   }
 
   feed.innerHTML = list.map(issue => `
-    <div class="issue-card" data-id="${issue.id}">
+    <div class="issue-card" data-id="${issue._docId || issue.id}">
       <div class="card-top">
         <div class="card-title">${issue.title}</div>
         <span class="status-badge status-${issue.status}">
@@ -302,10 +282,10 @@ function renderFeed() {
         <span>🕐 ${timeAgo(issue.time)}</span>
       </div>
       <div class="card-actions">
-        <button class="vote-btn ${issue.voted ? 'voted' : ''}" data-id="${issue.id}">
+        <button class="vote-btn ${issue.voted ? 'voted' : ''}" data-id="${issue._docId || issue.id}">
           ▲ <span>${issue.votes}</span>
         </button>
-        <button class="status-toggle" data-id="${issue.id}">
+        <button class="status-toggle" data-id="${issue._docId || issue.id}">
           → Mark ${nextStatusLabel(issue.status)}
         </button>
       </div>
@@ -316,34 +296,39 @@ function renderFeed() {
   feed.querySelectorAll('.issue-card').forEach(card => {
     card.addEventListener('click', e => {
       if (e.target.closest('.vote-btn') || e.target.closest('.status-toggle')) return;
-      const issue = issues.find(i => i.id === card.dataset.id);
+      const issue = issues.find(i => (i._docId || i.id) === card.dataset.id);
       if (issue?.lat && issue?.lng) {
         map.flyTo([issue.lat, issue.lng], 15, { duration: 1.2 });
-        markers[issue.id]?.openPopup();
+        markers[issue._docId || issue.id]?.openPopup();
       }
     });
   });
 
   // Vote
   feed.querySelectorAll('.vote-btn').forEach(btn => {
-    btn.addEventListener('click', e => {
+    btn.addEventListener('click', async e => {
       e.stopPropagation();
-      const issue = issues.find(i => i.id === btn.dataset.id);
+      const issue = issues.find(i => (i._docId || i.id) === btn.dataset.id);
       if (!issue) return;
       issue.voted = !issue.voted;
       issue.votes += issue.voted ? 1 : -1;
-      save(); renderFeed(); updateNavStats();
+      await updateIssue(issue);
+      renderFeed();
+      updateNavStats();
     });
   });
 
-  // Status
+  // Status toggle
   feed.querySelectorAll('.status-toggle').forEach(btn => {
-    btn.addEventListener('click', e => {
+    btn.addEventListener('click', async e => {
       e.stopPropagation();
-      const issue = issues.find(i => i.id === btn.dataset.id);
+      const issue = issues.find(i => (i._docId || i.id) === btn.dataset.id);
       if (!issue) return;
       issue.status = nextStatus(issue.status);
-      save(); renderFeed(); renderMarkers(); updateNavStats();
+      await updateIssue(issue);
+      renderFeed();
+      renderMarkers();
+      updateNavStats();
       showToast(`✅ Status → ${nextStatusLabel(issue.status)}`, 'success');
     });
   });
@@ -387,7 +372,6 @@ document.getElementById('use-location').addEventListener('click', () => {
     document.getElementById('issue-lng').value  = pos.coords.longitude.toFixed(5);
     showToast('📍 Location captured!', 'success');
   }, () => {
-    // Default to Bangalore center if denied
     document.getElementById('issue-lat').value = '12.97160';
     document.getElementById('issue-lng').value  = '77.59460';
     document.getElementById('issue-location').value = 'Bangalore, Karnataka';
@@ -395,20 +379,17 @@ document.getElementById('use-location').addEventListener('click', () => {
   });
 });
 
-// Submit
-document.getElementById('submit-issue').addEventListener('click', () => {
+// Submit new issue
+document.getElementById('submit-issue').addEventListener('click', async () => {
   const title = document.getElementById('issue-title').value.trim();
   if (!title) return showToast('Please enter an issue title ✏️', 'error');
 
   const latVal = parseFloat(document.getElementById('issue-lat').value);
   const lngVal = parseFloat(document.getElementById('issue-lng').value);
-
-  // Random spread across Bangalore if no coords
   const lat = isNaN(latVal) ? 12.90 + Math.random() * 0.12 : latVal;
   const lng = isNaN(lngVal) ? 77.55 + Math.random() * 0.20 : lngVal;
 
   const issue = {
-    id:       'u' + Date.now(),
     title,
     desc:     document.getElementById('issue-desc').value.trim(),
     category: selCat,
@@ -420,8 +401,12 @@ document.getElementById('submit-issue').addEventListener('click', () => {
     time:     Date.now(),
   };
 
+  showToast('⏳ Submitting...', '');
+  await saveNewIssue(issue);   // saves to Firestore, sets issue._docId
   issues.unshift(issue);
-  save(); renderFeed(); renderMarkers(); updateNavStats();
+  renderFeed();
+  renderMarkers();
+  updateNavStats();
   overlay.classList.remove('active');
   showToast('🎉 Issue reported! Thank you!', 'success');
 
@@ -454,8 +439,5 @@ document.getElementById('sort-select').addEventListener('change', e => {
 });
 
 // ---- BOOT ----
-load();
 initMap();
-renderMarkers();
-renderFeed();
-updateNavStats();
+load(); // async: loads from Firestore, then renders
