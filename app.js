@@ -180,7 +180,13 @@ let map;
 
 // ---- STORAGE ----
 function load() {
-  issues = JSON.parse(JSON.stringify(SEED));
+  const saved = localStorage.getItem('civicpulse_issues');
+  if (saved) {
+    issues = JSON.parse(saved);
+  } else {
+    issues = JSON.parse(JSON.stringify(SEED));
+    save();
+  }
 }
 
 function save() {
